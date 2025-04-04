@@ -22,7 +22,7 @@ drive.mount('/content/drive')
 folder_path = "/content/drive/MyDrive/화장품/증권리포트/1_txt"
 files = glob.glob(os.path.join(folder_path, "*.csv"))
 
-# 불용문 리스트트
+# 불용문 리스트
 stop_sentences = [
     "본 조사분석자료에 게재된 내용들이 본인의 의견을 정확하게 반영하고 있으며",
     "외부의 부당한 압력이나 간섭없이 신의성실하게 작성되었음을 확인합니다",
@@ -51,7 +51,11 @@ def preprocess_text_kss_based(text):
     raw_sentences = kss.split_sentences(text)
 
     # 중요 키워드 설정(문장이 짧아도 해당 키워드 포함시 생략하지 않음)
-    important_keywords = ['매출', '성장', '개선', '감소', '호조', '부진', '유지', '하향', '상향', '실적', '이익']
+    important_keywords = ['매출', '성장', '개선', '감소', '호조', '부진', '유지', '하향', '상향', '실적', '이익','동 자료', '이해관계', '최종결정', '책임소재', '당사', '배우자', '투자의견', '조사자료', '본자료', '자료:', '비고', '주:',
+                    '본 보고서', '본 자료', '도표', '|', '투자정보 확충', '보고서 발간 소식', '투자자문업', '신의성실', '이 자료', '증빙자료',
+                    '분석자료', '투자행위', '예상되는 경우에', '예상되는 종목에', '기관투자자', '부당한 압력', '정확성이나 완전성',
+                    '실제 펀드 편입 여부', '보유하고 있지 않습니다', '해당 정보가', '법으로 금지되어', '당 자료는',
+                    '연계되어 있지 않습니다', '보유하고 있지 않습니다', '제시하고 있습니다', '의견을 제시합니다', '부당한 압박']
 
     # 불용어 리스트(해당 키워드 포함 문장은 전부 제거)
     remove_keywords = [
@@ -81,8 +85,18 @@ def preprocess_text_kss_based(text):
     # 문장 전처리
     clean_sentences = []
     for sent in raw_sentences:
-        #공백 제거
-        sent = sent.strip()
+        
+        # 한글이 아닌 문자 사이 공백만 제거(한글 사이 공백은 처리하지 않음)
+        def remove_spaces(sent):
+            if isinstance(sent, str):
+                def replace_match(match):
+                    before, space, after = match.groups()
+
+                    if re.match(r'^[가-힣]+$', before) and re.match(r'^[가-힣]+$', after):
+                        return match.group(0)
+                    return before + after
+                return re.sub(r'([^가-힣])(\s+)([^가-힣])', replace_match, sent)
+            return sent
         
         # 정규 표현식 불용문 제거
         if any(re.search(pattern, sent) for pattern in stop_patterns):
@@ -100,9 +114,12 @@ def preprocess_text_kss_based(text):
         # 짧은 문장 및 내용이 없는 문장 제거(그림, 표 등)
         if len(sent) < 10:
             continue
-        if re.match(r'^[가-힣\s/]+$', sent):
-            continue
         if '자료' in sent or '그림' in sent or '페이지' in sent:
+            continue
+        eng_count = len(re.findall(r'[a-zA-Z]', sent))
+        if eng_count / len(sent) >= 0.2:
+            continue
+        if re.match(r'^[가-힣\s/]+$', sent):
             continue
 
         # 정규표현식을 활용한 추가 클렌징
