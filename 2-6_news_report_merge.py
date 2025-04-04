@@ -1,5 +1,5 @@
 # 기업별 뉴스기사 및 증권사 분석 토큰화 파일 병합
-# 이후 감성분석 후 가중치 적용 위해 기업별 구분분
+# 이후 감성분석 후 가중치 적용 위해 기업별 구분
 
 import pandas as pd
 
@@ -20,5 +20,5 @@ print(merged_df.head())
 merged_df["날짜"] = pd.to_datetime(merged_df["날짜"], infer_datetime_format=True, errors='coerce')
 merged_df["날짜"] = merged_df["날짜"].dt.strftime("%Y-%m-%d")
 
-# 최종 병합 파일 저장장
-merged_df.to_csv(file_path, index=False)
+# 최종 병합 파일 저장
+merged_df.to_csv("merged_LG생활건강.csv", index=False, encoding='utf-8-sig')
