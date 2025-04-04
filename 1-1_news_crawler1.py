@@ -1,3 +1,4 @@
+# BeautifulSoup 활용한 뉴스기사 크롤러
 # 라이브러리 모음
 import random
 import requests

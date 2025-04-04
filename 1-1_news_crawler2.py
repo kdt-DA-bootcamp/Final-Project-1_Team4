@@ -1,3 +1,4 @@
+# BeautifulSoup & Scrpay 활용 뉴스기사 크롤러(url 저장 파일 따로 생성)
 # 라이브러리 모음
 from selenium import webdriver
 from bs4 import BeautifulSoup
@@ -5,7 +6,13 @@ import time
 import csv
 from datetime import datetime, timedelta
 import os
+import scrapy
+import pandas as pd
+import re
 
+
+
+## 뉴스 url 수집
 # 검색어 및 검색 기간 설정
 search_query = "토니모리"
 
@@ -117,3 +124,71 @@ with open(output_file, "a", encoding="utf-8-sig", newline="") as f:
             except:
                 pass
 
+
+## 뉴스기사 본문 수집
+class NewsSpider(scrapy.Spider):
+    name = "news"
+
+    custom_settings = {
+        'JOBDIR': 'crawls/news_spider_state',
+        'DUPEFILTER_CLASS': 'scrapy.dupefilters.BaseDupeFilter',
+    }
+
+    # 기본 저장 경로 (기사별 월별 폴더 생성)
+    base_save_path = r"C:/Users/likel/Desktop/project_team4/navernews/news_texts/브이티"
+
+    # 기사 목록 저장된 csv 파일 불러오기기
+    csv_file_path = r"C:\Users\likel\Desktop\project_team4\네이버뉴스\news_vtgmp_final.csv"
+
+    def start_requests(self):
+        """ CSV 파일에서 URL 목록을 불러와 크롤링 시작 """
+        df = pd.read_csv(self.csv_file_path)
+        urls = df['url'].dropna().tolist()
+
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
+
+    def parse(self, response):
+        """ 기사 정보 크롤링 및 저장 """
+
+        # 제목 크롤링
+        title = response.css('h2#title_area span::text').get(default='N/A')
+
+        # 날짜 크롤링
+        date_raw = response.css('span.media_end_head_info_datestamp_time._ARTICLE_DATE_TIME::attr(data-date-time)').get(default="N/A")
+        self.log(f"DEBUG: Extracted date_raw: {date_raw}")
+
+
+        # 본문 크롤링
+        content = ' '.join(response.css('div#contents.newsct_body::text').getall()).strip()
+        if not content:
+            content = ' '.join(response.css('article#dic_area::text').getall()).strip()
+
+        # 날짜 형식 변환(YYYYMM)
+        if date_raw and date_raw != 'N/A':
+            clean_date = date_raw.split(' ')[0].replace("-", "")
+            month_folder = date_raw[:7].replace("-", "")  # YYYYMM 형식 (월별 폴더 생성용)
+        else:
+            clean_date = 'unknown_date'
+            month_folder = 'unknown_month'
+
+        # 기사 ID 추출
+        article_id_match = re.search(r'/(\d{10})\?', response.url)
+        article_id = article_id_match.group(1) if article_id_match else "no_id"
+
+        # 월별 폴더 생성
+        save_path = os.path.join(self.base_save_path, month_folder)
+        os.makedirs(save_path, exist_ok=True)
+
+        # 파일명 만들기 (특수문자 제거 & 길이 제한)
+        file_title = re.sub(r'[\\/*?:"<>|]', "_", title)[:30]  # 특수문자 제거 및 길이 제한
+        file_name = f'news_{clean_date}_{file_title}_{article_id}.txt'
+        file_path = os.path.join(save_path, file_name)
+
+        # 파일 저장
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(f'제목: {title}\n')
+            f.write(f'날짜: {clean_date}\n')
+            f.write(f'본문:\n{content}\n')
+
+        self.log(f'저장 완료: {file_path}')
