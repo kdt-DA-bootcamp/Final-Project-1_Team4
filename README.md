@@ -132,10 +132,9 @@
 ## 주요 기술 스택 및 라이브러리
 
 - 데이터 크롤링: `BeautifulSoup`, `Selenium`, `requests`  
-- 자연어 처리: `KoBERT`, `konlpy`, `Mecab`, `regex`  
-- 머신러닝/딥러닝: `scikit-learn`, `XGBoost`, `PyTorch`, `GradientBoosting`  
-- 시각화: `matplotlib`, `Streamlit`  
-- 전처리 및 정규화: `pandas`, `MinMaxScaler`, `re`  
+- 전처리 및 정규화: `pandas`, `MinMaxScaler`, `re`, `KoBERT`, `konlpy`, `Mecab`, `regex`  
+- 머신러닝(딥러닝): `scikit-learn`, `XGBoost`, `PyTorch`, `GradientBoosting`  
+- 시각화: `matplotlib`, `Streamlit`
 
 ---
 
