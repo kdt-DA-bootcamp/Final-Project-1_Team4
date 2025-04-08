@@ -27,7 +27,7 @@ def tokenize_sentences(text):
         return sentences
     return []
 
-# 문장 토큰화 적용용
+# 문장 토큰화 적용
 df['Sentences'] = df['Text'].apply(tokenize_sentences)
 
 # 빈 Text 칼럼 제거
