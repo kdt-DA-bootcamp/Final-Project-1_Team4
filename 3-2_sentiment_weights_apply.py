@@ -73,7 +73,7 @@ etf_price = pd.read_csv(etf_path)
 etf_price["날짜"] = pd.to_datetime(etf_price["날짜"].astype(str).str.strip())
 etf_price["종가"] = etf_price["종가"].astype(str).str.replace(",", "").astype(float)
 
-# 최종 병합 후 저장장
+# 최종 병합 후 저장
 final_df = pd.merge(filtered_sentiment, etf_price[["날짜", "종가", "거래량"]], on="날짜", how="inner")
 final_df = final_df.sort_values("날짜").reset_index(drop=True)
 final_df.to_csv("merged_df.csv", index=False, encoding="utf-8-sig")
