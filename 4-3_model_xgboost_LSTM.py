@@ -47,7 +47,7 @@ train_scaled = scaler.fit_transform(train_df[["종가", "거래량", "가중 감
 train_scaled_df = pd.DataFrame(train_scaled, columns=["종가", "거래량", "감성"])
 train_scaled_df = train_scaled_df.apply(pd.to_numeric, errors="coerce").dropna().reset_index(drop=True)
 
-# Dataset 정의
+# 데이터셋 정의
 class ETFLSTMDataset(Dataset):
     def __init__(self, df, window_size=5):
         self.X, self.y = [], []
@@ -64,7 +64,7 @@ class ETFLSTMDataset(Dataset):
     def __getitem__(self, idx):
         return torch.tensor(self.X[idx], dtype=torch.float32), torch.tensor(self.y[idx], dtype=torch.float32)
 
-# Train Dataset 준비
+# 학습 데이터셋 준비
 window_size = 5
 dataset = ETFLSTMDataset(train_scaled_df, window_size)
 train_loader = DataLoader(dataset, batch_size=32)
@@ -151,7 +151,7 @@ model.eval()
 with torch.no_grad():
     lstm_future_preds = model(X_future_tensor).numpy()
 
-# XGB 피처 설정정
+# XGB 피처 설정
 xgb_future_X = make_xgb_features(full_df, window_size)[len(train_scaled_df) - window_size:]
 residual_future = xgb_model.predict(xgb_future_X)
 final_preds = lstm_future_preds + residual_future

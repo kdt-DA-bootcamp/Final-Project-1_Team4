@@ -69,7 +69,7 @@ print("저장 완료: GradientBoosting_예측결과_2025.csv")
 
 
 # 변수 중요도 탐색을 통한 피쳐셀렉션
-# SHAP 불러와서 정의하기
+# SHAP 활용
 !pip install shap
 import shap
 

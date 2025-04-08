@@ -45,7 +45,7 @@ print("변수 간 상관관계:\n", data_corr['종가'].sort_values(ascending=Fa
 important_features = data_corr['종가'].abs().sort_values(ascending=False).index[1:6]  # '종가' 제외하고 상위 5개 선택
 print("선택된 변수:", important_features)
 
-# 학습 및 테스트 데이터 분리
+# 학습/예측 데이터 분할
 y_train = data[data['년도'] <= 2023]['종가']
 X_train = data[data['년도'] <= 2023][important_features]
 y_test = data[data['년도'] == 2024]['종가']
