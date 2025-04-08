@@ -9,26 +9,29 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.preprocessing import StandardScaler
 
-# 파일 열기
+# 파일 인코딩 확인
 with open("분기별 재무제표.csv", "rb") as f:
     rawdata = f.read()
     result = chardet.detect(rawdata)
     print(result)
 
+# 파일 열기
 cosmetics_cpi = pd.read_csv("분기별 소비자물가지수.csv", encoding="utf-8")
 etf_prices = pd.read_csv("분기별 화장품 지수.csv", encoding="utf-8")
 sentiment_scores = pd.read_csv("분기별 감성점수.csv", encoding="utf-8")
 
 financials = pd.read_csv("분기별 재무제표.csv", encoding="euc-kr")
 
-# 분기 기준으로 데이터 병합 및 전처리
+# 분기 기준으로 데이터 병합
 data = cosmetics_cpi.merge(financials, on='분기').merge(etf_prices, on='분기').merge(sentiment_scores, on='분기')
 
 # 쉼표(,)가 포함된 숫자 데이터를 정수 또는 실수로 변환
 for col in data.columns:
     if data[col].dtype == "object":
         data[col] = data[col].str.replace(",", "").astype("float", errors="ignore")
+
 # 결측치 처리 (평균값으로 대체)
 data.fillna(data.mean(numeric_only=True), inplace=True)
 
@@ -42,7 +45,7 @@ data_corr = data.corr(numeric_only=True)
 print("변수 간 상관관계:\n", data_corr['종가'].sort_values(ascending=False))
 
 # 중요한 변수 선택 (상관관계 절댓값이 높은 변수들)
-important_features = data_corr['종가'].abs().sort_values(ascending=False).index[1:6]  # '종가' 제외하고 상위 5개 선택
+important_features = data_corr['종가'].abs().sort_values(ascending=False).index[1:6] # 종가와 상관관계가 높은 상위 5개 변수 선택 (종가 제외)
 print("선택된 변수:", important_features)
 
 # 학습/예측 데이터 분할
