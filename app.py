@@ -15,7 +15,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📈 TIGER 화장품 ETF", "💬 
 # ------------------ TAB 1: ETF vs KOSPI ------------------ #
 with tab1:
     # ░░ 1. 트리맵 데이터 로딩 및 시각화 ░░
-    df_tree = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab1_Constituents.csv")
+    df_tree = pd.read_csv("data/tab1_Constituents.csv")
     df_tree.columns = df_tree.columns.str.strip()
 
     df_tree['비중(%)'] = pd.to_numeric(df_tree['비중(%)'], errors='coerce')
@@ -91,7 +91,7 @@ with tab1:
     st.markdown("<hr style='margin:40px 0; border:1px solid #555;'>", unsafe_allow_html=True)
     st.markdown("### 📈 TIGER ETF vs KOSPI 지수 (정규화 + 이동평균)")
     # 데이터 로딩
-    df_compare = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab1_ETFvsKOSPI.csv")
+    df_compare = pd.read_csv("data/tab1_ETFvsKOSPI.csv")
     df_compare['date'] = pd.to_datetime(df_compare['date'])
     df_compare = df_compare.dropna(subset=['TIGER ETF', 'KOSPI'])
 
@@ -143,7 +143,7 @@ with tab1:
 
 # ------------------ TAB 2: 감성 점수 ------------------ #
 with tab2:
-    df_sentiment = pd.read_csv(r'C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab2_Sentiment_Score_Daily_Combined.csv')
+    df_sentiment = pd.read_csv('data/tab2_Sentiment_Score_Daily_Combined.csv')
     df_sentiment['날짜'] = pd.to_datetime(df_sentiment['문서발표일'], errors='coerce')
     df_sentiment = df_sentiment.dropna(subset=['날짜'])
     df_sentiment = df_sentiment.loc[:, ~df_sentiment.columns.duplicated()]
@@ -199,7 +199,7 @@ with tab3:
     st.subheader("📈 2024년 ETF 종가 예측 결과")
 
     # CSV 로딩
-    result_df = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab3_ETF_Predictions_2024.csv")  # 또는 절대 경로 사용
+    result_df = pd.read_csv("data/tab3_ETF_Predictions_2024.csv")  # 또는 절대 경로 사용
 
     # 예측 성능 계산
     y_true = result_df['실제 종가']
@@ -274,7 +274,7 @@ with tab4:
 
     st.markdown("### 📊 GradientBoosting 예측 결과 시각화")
 
-    df_pred = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab4_model_GradientBoosting.csv")
+    df_pred = pd.read_csv("data/tab4_model_GradientBoosting.csv")
     # 예시 컬럼: 날짜, 실제값, 예측값 등 가정
     df_pred['날짜'] = pd.to_datetime(df_pred['날짜'])
     df_pred = df_pred.sort_values('날짜')
@@ -329,7 +329,7 @@ with tab5:
 
     # CSV 로드
     df_eval = pd.read_csv(
-        r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab5_XGboost.csv"
+        "data/tab5_XGboost.csv"
     )
 
     # target + model 조합 컬럼 생성
@@ -377,8 +377,8 @@ with tab5:
     """, unsafe_allow_html=True)
 
     # 파일 로드
-    df_20 = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab5_Variables_20Days_Later.csv")
-    df_q = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab5_Variables_Quarterly.csv")
+    df_20 = pd.read_csv("data/tab5_Variables_20Days_Later.csv")
+    df_q = pd.read_csv("data/tab5_Variables_Quarterly.csv")
 
     col1, col2 = st.columns(2)
 
@@ -440,7 +440,7 @@ with tab6:
     st.markdown("### 📈 LSTM + XGBoost 예측 결과 (2025년)")
 
     # CSV 파일 불러오기
-    pred_df = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab6_XGboost_LSTM.csv")
+    pred_df = pd.read_csv("data/tab6_XGboost_LSTM.csv")
     pred_df["날짜"] = pd.to_datetime(pred_df["날짜"])
 
     # Plotly 시각화
