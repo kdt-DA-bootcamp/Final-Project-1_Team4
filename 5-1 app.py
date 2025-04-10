@@ -14,7 +14,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["📈 ETF vs KOSPI", "💬 감성 점수", "�
 # ------------------ TAB 1: ETF vs KOSPI ------------------ #
 with tab1:
     # ░░ 1. 트리맵 데이터 로딩 및 시각화 ░░
-    df_tree = pd.read_csv("/home/ubuntu/team4-db-project/구성종목_1년.csv")
+    df_tree = pd.read_csv("data/구성종목_1년.csv")
     df_tree.columns = df_tree.columns.str.strip()
 
     df_tree['비중(%)'] = pd.to_numeric(df_tree['비중(%)'], errors='coerce')
@@ -90,7 +90,7 @@ with tab1:
     st.markdown("<hr style='margin:40px 0; border:1px solid #555;'>", unsafe_allow_html=True)
     st.markdown("### 📈 TIGER ETF vs KOSPI 지수 (정규화 + 이동평균)")
     # 데이터 로딩
-    df_compare = pd.read_csv("/home/ubuntu/team4-db-project/ETFvsKOSPI.csv")
+    df_compare = pd.read_csv("data/ETFvsKOSPI.csv")
     df_compare['date'] = pd.to_datetime(df_compare['date'])
     df_compare = df_compare.dropna(subset=['TIGER ETF', 'KOSPI'])
 
@@ -142,7 +142,7 @@ with tab1:
 
 # ------------------ TAB 2: 감성 점수 ------------------ #
 with tab2:
-    df_sentiment = pd.read_csv('/home/ubuntu/team4-db-project/통합_감성점수_일별_정리.csv')
+    df_sentiment = pd.read_csv('data/통합_감성점수_일별_정리.csv')
     df_sentiment['날짜'] = pd.to_datetime(df_sentiment['문서발표일'], errors='coerce')
     df_sentiment = df_sentiment.dropna(subset=['날짜'])
     df_sentiment = df_sentiment.loc[:, ~df_sentiment.columns.duplicated()]
@@ -192,7 +192,7 @@ with tab3:
     st.markdown("### 📊 모델별 성능 비교 대시보드")
 
     # 엑셀 시트 로드 및 정리
-    df_eval = pd.read_csv("/home/ubuntu/team4-db-project/모델결과1.csv")
+    df_eval = pd.read_csv("data/모델결과1.csv")
     df_eval.columns = ['모델구성', '모델', '타겟(Y)', 'Accuracy', 'Precision', 'Recall', 'F1-score']
 
     # 타겟 설정: '분기수익률'과 '20일후 수익률'
@@ -247,7 +247,7 @@ with tab4:
 
     st.markdown("### 📊 GradientBoosting 예측 결과 시각화")
 
-    df_pred = pd.read_csv("/home/ubuntu/team4-db-project/모델결과2.csv")
+    df_pred = pd.read_csv("data/모델결과2.csv")
     # 예시 컬럼: 날짜, 실제값, 예측값 등 가정
     df_pred['날짜'] = pd.to_datetime(df_pred['날짜'])
     df_pred = df_pred.sort_values('날짜')
