@@ -6,15 +6,16 @@ import os
 import plotly.graph_objects as go
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
+import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
-tab1, tab2, tab3, tab4 = st.tabs(["📈 ETF vs KOSPI", "💬 감성 점수", "📊 모델 예측 결과1", "📊 모델 예측 결과2"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📈 TIGER 화장품 ETF", "💬 감성 점수", "📊 LinearRegression", "📊 GradientBoosting", "📊 XGBoost", "📊 LSTM + XGBoost"])
 
 # ------------------ TAB 1: ETF vs KOSPI ------------------ #
 with tab1:
     # ░░ 1. 트리맵 데이터 로딩 및 시각화 ░░
-    df_tree = pd.read_csv("data/구성종목_1년.csv")
+    df_tree = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab1_Constituents.csv")
     df_tree.columns = df_tree.columns.str.strip()
 
     df_tree['비중(%)'] = pd.to_numeric(df_tree['비중(%)'], errors='coerce')
@@ -90,7 +91,7 @@ with tab1:
     st.markdown("<hr style='margin:40px 0; border:1px solid #555;'>", unsafe_allow_html=True)
     st.markdown("### 📈 TIGER ETF vs KOSPI 지수 (정규화 + 이동평균)")
     # 데이터 로딩
-    df_compare = pd.read_csv("data/ETFvsKOSPI.csv")
+    df_compare = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab1_ETFvsKOSPI.csv")
     df_compare['date'] = pd.to_datetime(df_compare['date'])
     df_compare = df_compare.dropna(subset=['TIGER ETF', 'KOSPI'])
 
@@ -142,7 +143,7 @@ with tab1:
 
 # ------------------ TAB 2: 감성 점수 ------------------ #
 with tab2:
-    df_sentiment = pd.read_csv('data/통합_감성점수_일별_정리.csv')
+    df_sentiment = pd.read_csv(r'C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab2_Sentiment_Score_Daily_Combined.csv')
     df_sentiment['날짜'] = pd.to_datetime(df_sentiment['문서발표일'], errors='coerce')
     df_sentiment = df_sentiment.dropna(subset=['날짜'])
     df_sentiment = df_sentiment.loc[:, ~df_sentiment.columns.duplicated()]
@@ -186,60 +187,86 @@ with tab2:
 
     st.plotly_chart(fig_sent, use_container_width=True)
 
-# ------------------ TAB 3: 모델 예측 1 ------------------ #
-
-with tab3:
-    st.markdown("### 📊 모델별 성능 비교 대시보드")
-
-    # 엑셀 시트 로드 및 정리
-    df_eval = pd.read_csv("data/모델결과1.csv")
-    df_eval.columns = ['모델구성', '모델', '타겟(Y)', 'Accuracy', 'Precision', 'Recall', 'F1-score']
-
-    # 타겟 설정: '분기수익률'과 '20일후 수익률'
-    타겟_목록 = ['분기수익률', '20일후 수익률']
     
-    # 성능 지표를 Accuracy, Precision, Recall, F1-score 중 하나로 선택
-    성능지표 = 'Accuracy'  # 기본 지표 설정
 
-    for 타겟선택 in 타겟_목록:
-        st.markdown(f"### {타겟선택}에 대한 모델 성능")
-
-        # 데이터 필터링 & 정렬
-        df_filtered = df_eval[df_eval['타겟(Y)'] == 타겟선택].dropna(subset=[성능지표])
-        # 데이터가 존재하는지 확인
-        st.write(f"필터링된 {타겟선택} 데이터:", df_filtered)
-        df_sorted = df_filtered.sort_values(by=성능지표, ascending=False)
-
-        # 바 차트 시각화
-        fig = px.bar(
-            df_sorted,
-            x='모델',
-            y=성능지표,
-            color='모델구성',
-            text=성능지표,
-            title=f"📊 모델 성능 비교 - {성능지표} 기준 ({타겟선택})"
-        )
-        fig.update_traces(texttemplate='%{text:.4f}', textposition='outside')
-        fig.update_layout(
-            template='plotly_dark',
-            height=500,
-            xaxis_title="모델", 
-            yaxis_title=성능지표,
-            uniformtext_minsize=8, 
-            uniformtext_mode='hide'
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-        # 성능 지표 테이블
-        st.markdown(f"#### 📋 {타겟선택}에 대한 모델 성능 지표 테이블")
-        st.dataframe(df_sorted.reset_index(drop=True))
-        
-        # 구분선 추가
-        st.markdown("<hr style='margin:40px 0; border:1px solid #555;'>", unsafe_allow_html=True)
+# ------------------ TAB 3: 김은재 : Linear ------------------ #
+with tab3:
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
-# ------------------ TAB 4: 모델 예측 2 ------------------ #
+    st.subheader("📈 2024년 ETF 종가 예측 결과")
+
+    # CSV 로딩
+    result_df = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab3_ETF_Predictions_2024.csv")  # 또는 절대 경로 사용
+
+    # 예측 성능 계산
+    y_true = result_df['실제 종가']
+    y_pred = result_df['예측 종가']
+    mae = mean_absolute_error(y_true, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+    r2 = r2_score(y_true, y_pred)
+
+    # 메트릭 카드 표시
+    st.markdown("#### ✅ 예측 성능 지표")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("📉 MAE", f"{mae:.2f}")
+    col2.metric("📈 RMSE", f"{rmse:.2f}")
+    col3.metric("📊 R² Score", f"{r2:.4f}")
+
+    # 데이터프레임 출력
+    st.markdown("#### 📋 예측 결과 데이터")
+    st.dataframe(result_df)
+
+    import plotly.graph_objects as go
+
+    st.markdown("#### 📊 2024년 분기별 실제 종가 vs 예측 종가")
+
+    x = result_df['분기']
+    y_true = result_df['실제 종가']
+    y_pred = result_df['예측 종가']
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=x, y=y_true,
+        mode='lines+markers',
+        name='실제 종가',
+        line=dict(color='lightskyblue', width=3),
+        marker=dict(symbol='circle', size=8)
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=x, y=y_pred,
+        mode='lines+markers',
+        name='예측 종가',
+        line=dict(color='orange', width=3, dash='dash'),
+        marker=dict(symbol='square', size=8)
+    ))
+
+    fig.update_layout(
+        title='2024년 ETF 종가 예측 결과',
+        xaxis_title='분기',
+        yaxis_title='ETF 종가',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        template='plotly_dark',  # ✅ 여기가 포인트
+        hovermode='x unified',
+        margin=dict(l=40, r=40, t=60, b=40)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+
+
+# ------------------ TAB 4: 김주혜 : GradientBoosting ------------------ #
 with tab4:
     # tab4 안의 가장 위에 추가
     from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -247,7 +274,7 @@ with tab4:
 
     st.markdown("### 📊 GradientBoosting 예측 결과 시각화")
 
-    df_pred = pd.read_csv("data/모델결과2.csv")
+    df_pred = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab4_model_GradientBoosting.csv")
     # 예시 컬럼: 날짜, 실제값, 예측값 등 가정
     df_pred['날짜'] = pd.to_datetime(df_pred['날짜'])
     df_pred = df_pred.sort_values('날짜')
@@ -263,6 +290,17 @@ with tab4:
     
     # MAPE (0 나누기 방지)
     mape = np.mean(np.abs((y_true - y_pred) / y_true.replace(0, np.nan))) * 100
+    
+    st.markdown("#### 📌 예측 성능 지표 (GradientBoosting)")
+
+    col1, col2, col3 = st.columns(3)
+    col4, col5, _ = st.columns(3)
+
+    col1.metric("📉 MAE", f"{mae:.4f}")
+    col2.metric("📏 MSE", f"{mse:.6f}")
+    col3.metric("📐 RMSE", f"{rmse:.4f}")
+    col4.metric("📊 MAPE", f"{mape:.2f}%")
+    col5.metric("🎯 R² Score", f"{r2:.4f}")
 
     # 선그래프 시각화
     fig = go.Figure()
@@ -270,23 +308,184 @@ with tab4:
                              name='실제 수익률', line=dict(color='lightgreen')))
     fig.add_trace(go.Scatter(x=df_pred['날짜'], y=y_pred,
                              name='예측 수익률', line=dict(color='orange', dash='dot')))
+    
+    st.markdown("#### 📈 2025년 실제 수익률 vs 예측 수익률")
 
     fig.update_layout(
         template='plotly_dark',
-        title="📈 실제 수익률 vs 예측 수익률 (GradientBoosting)",
         xaxis_title="날짜", yaxis_title="수익률",
         height=500, hovermode='x unified'
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # 성능 지표 출력
-    st.markdown(f"""
-    ### 📌 예측 성능 지표 (GradientBoosting)
 
-    - **MAE** (Mean Absolute Error): `{mae:.4f}`
-    - **MSE** (Mean Squared Error): `{mse:.6f}`
-    - **RMSE** (Root Mean Squared Error): `{rmse:.4f}`
-    - **MAPE** (Mean Absolute Percentage Error): `{mape:.2f}%`
-    - **R² Score**: `{r2:.4f}`
-    """)
+
+
+# ------------------ TAB 5: 고민정 : XGboost ------------------ #
+
+with tab5:
+    st.markdown("### 📊 모델별 예측력 + 변수 영향력 통합 분석")
+
+    # CSV 로드
+    df_eval = pd.read_csv(
+        r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab5_XGboost.csv"
+    )
+
+    # target + model 조합 컬럼 생성
+    df_eval['target'] = df_eval['target'].str.strip()
+    df_eval['target+model'] = df_eval['target'] + ' - ' + df_eval['model']
+
+    # 사용할 성능 지표들
+    metrics = ['Accuracy', 'Precision', 'Recall', 'F1-score']
+
+    # 각 성능 지표별 차트를 반복 생성
+    for metric in metrics:
+        st.markdown(f"### 🔹 {metric}")
+
+        fig = px.bar(
+            df_eval,
+            x='composition',
+            y=metric,
+            color='target+model',
+            barmode='group',
+            text=metric,
+            title=f"{metric} by Composition / Target / Model"
+        )
+
+        fig.update_traces(texttemplate='%{text:.4f}', textposition='outside')
+        fig.update_layout(
+            template='plotly_dark',
+            height=550,
+            xaxis_title="Composition", 
+            yaxis_title=metric,
+            uniformtext_minsize=15,
+            uniformtext_mode='hide'
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Optional: 데이터프레임 확인
+    st.markdown("#### 📋 Raw Evaluation Data")
+    st.dataframe(df_eval.reset_index(drop=True))
+
+    st.markdown("<hr style='margin-top:40px; margin-bottom:30px; border:1px solid #555;'>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='margin-top:0px; margin-bottom:20px; font-size:28px; font-weight:700'>
+    🧠 상위 10개 주요변수 중요도
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 파일 로드
+    df_20 = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab5_Variables_20Days_Later.csv")
+    df_q = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab5_Variables_Quarterly.csv")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("##### 📅 20일 후 수익률 예측 변수")
+        fig_20 = px.bar(
+            df_20.sort_values(by='중요도'),
+            x='중요도', y='변수명',
+            orientation='h',
+            text='중요도',
+            template='plotly_dark',
+            height=500
+        )
+        fig_20.update_traces(
+            texttemplate='%{text:.3f}',
+            textposition='outside',
+            marker=dict(
+                color='rgba(51, 153, 255, 0.7)' # 파랑 + 투명도
+            )
+        )
+        fig_20.update_layout(
+            xaxis_title='중요도',
+            yaxis_title='',
+            margin=dict(t=30, b=30, l=10, r=10),
+        )
+        st.plotly_chart(fig_20, use_container_width=True)
+
+    with col2:
+        st.markdown("##### 📅 분기 수익률 예측 변수")
+        fig_q = px.bar(
+            df_q.sort_values(by='중요도'),
+            x='중요도', y='변수명',
+            orientation='h',
+            text='중요도',
+            template='plotly_dark',
+            height=500
+        )
+        fig_q.update_traces(
+            texttemplate='%{text:.3f}',
+            textposition='outside',
+            marker=dict(
+                color='rgba(255, 102, 102, 0.7)'  # 빨강 + 투명도
+            )
+        )
+        fig_q.update_layout(
+            xaxis_title='중요도',
+            yaxis_title='',
+            margin=dict(t=30, b=30, l=10, r=10),
+        )
+        st.plotly_chart(fig_q, use_container_width=True)
+
+# ------------------ TAB 6: 권가희 : XGboost + LSTM ------------------ #
+
+with tab6:
+    import pandas as pd
+    import plotly.graph_objects as go
+    import streamlit as st
+
+    st.markdown("### 📈 LSTM + XGBoost 예측 결과 (2025년)")
+
+    # CSV 파일 불러오기
+    pred_df = pd.read_csv(r"C:\Users\Vivobook Pro M7600QE\BootCamp\TIL\팀플_화장품\streamlit\data\tab6_XGboost_LSTM.csv")
+    pred_df["날짜"] = pd.to_datetime(pred_df["날짜"])
+
+    # Plotly 시각화
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=pred_df["날짜"], y=pred_df["실제 ETF"],
+        mode='lines+markers',
+        name='실제',
+        line=dict(color='royalblue', width=2.5),
+        marker=dict(symbol='circle', size=6)
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=pred_df["날짜"], y=pred_df["예측 ETF"],
+        mode='lines+markers',
+        name='예측',
+        line=dict(color='darkorange', width=2.5, dash='dash'),
+        marker=dict(symbol='square', size=6)
+    ))
+
+    fig.update_layout(
+        xaxis_title='날짜',
+        yaxis_title='ETF 종가',
+        legend=dict(orientation='h', y=1.1, x=1, xanchor='right'),
+        hovermode='x unified',
+        template='plotly_white',
+        margin=dict(l=40, r=40, t=60, b=40)
+    )
+    # 지표 계산
+    y_true = pred_df["실제 ETF"]
+    y_pred = pred_df["예측 ETF"]
+
+    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+    mae = mean_absolute_error(y_true, y_pred)
+    r2 = r2_score(y_true, y_pred)
+    mape = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+
+    # 지표 카드 형태 출력
+    st.markdown("#### 📅 성능 지표")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("📉 RMSE", f"{rmse:.2f}")
+    col2.metric("📏 MAE", f"{mae:.2f}")
+    col3.metric("📊 MAPE", f"{mape:.2f}%")
+    col4.metric("🎯 R² Score", f"{r2:.4f}")
+
+    st.markdown("#### 📉 2025년 ETF 종가 예측 vs 실제")
+    st.plotly_chart(fig, use_container_width=True)
